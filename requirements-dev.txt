@@ -2,6 +2,7 @@
 -r requirements.txt
 
 # Testing
+testpaths = tests
 pytest>=7.4.0
 pytest-cov>=4.1.0
 pytest-mock>=3.11.0
@@ -16,3 +17,9 @@ mypy>=1.5.0
 # Development tools
 ipython>=8.14.0
 ipdb>=0.13.13
+
+# Packaging and distribution
+build>=1.0.0
+twine>=4.0.0
+setuptools>=61.0.0
+wheel>=0.40.0

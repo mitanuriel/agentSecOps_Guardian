@@ -42,28 +42,63 @@ source .venv/bin/activate  # On macOS/Linux
 uv pip install -r requirements.txt
 ```
 
+### Installing the Package in development mode 
+
+To install the `secure` CLI tool system-wide:
+
+```bash
+# Install in development mode (recommended for development)
+pip install -e .
+```
+
+After installation, you can run the `secure` command from anywhere:
+
+```bash
+# Run security analysis on a file
+secure ./tests/example_backend.py
+
+# With Mistral AI analysis (requires API key)
+secure ./tests/example_backend.py --mistral --mistral-key your_api_key
+```
+
+📋 Report generated: report.md
+
 ## Usage
 
 ### Running the Security Analysis CLI
 
-The main CLI tool is located in `agentsecops/main.py` and provides text file analysis with security scanning capabilities:
+After installation, you can use the `secure` command:
 
 ```bash
 # Basic usage - analyze a text file and generate security report
-python -m agentsecops.main input_file.txt
+secure input_file.txt
 
 # With output file specification
-python -m agentsecops.main input_file.txt -o security_report.md
+secure input_file.txt -o security_report.md
 
 # With text processing options
-python -m agentsecops.main input_file.txt -l -s -w --lines
+secure input_file.txt -l -s -w --lines
+
+# With Mistral AI analysis (requires API key)
+secure input_file.txt --mistral --mistral-key your_api_key
+
+# With different analysis types
+secure input_file.txt --mistral --analysis-type prompt_injection
+
+# Advanced options
+secure input_file.txt --verbose --no-patterns
 
 # Available options:
-# -l, --lowercase        Convert text to lowercase
-# -s, --strip            Strip leading/trailing whitespace
-# -w, --remove-whitespace Remove extra whitespace between words
-# --lines               Process line by line (removes empty lines)
-# -o, --output          Output report file path (default: report.md)
+# -l, --lowercase              Convert text to lowercase
+# -s, --strip                  Strip leading/trailing whitespace
+# -w, --remove-whitespace      Remove extra whitespace between words
+# --lines                     Process line by line (removes empty lines)
+# -o, --output                 Output report file path (default: report.md)
+# --mistral                   Enable Mistral AI analysis
+# --mistral-key               Mistral API key (overrides MISTRAL_API_KEY env var)
+# --analysis-type             Type of Mistral analysis (prompt_injection, hallucination, etc.)
+# --verbose                   Enable verbose output
+# --no-patterns               Skip pattern-based security analysis
 ```
 
 ### Example Workflow
