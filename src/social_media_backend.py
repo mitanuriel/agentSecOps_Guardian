@@ -2,11 +2,20 @@
 
 import requests
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
+from pathlib import Path
 
 MISTRAL_CHAT_COMPLETIONS_URL = "https://api.mistral.ai/v1/chat/completions"
 
 app = FastAPI(title="Social Media Manager Backend")
+
+# Get the directory where this file is located
+BASE_DIR = Path(__file__).resolve().parent
+
+# Mount static files
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
 
 class GeneratePostRequest(BaseModel):
@@ -15,6 +24,12 @@ class GeneratePostRequest(BaseModel):
     api_key: str
     prompt: str
     model: str = "mistral-small-latest"
+
+
+@app.get("/")
+def index():
+    """Serve the frontend dashboard."""
+    return FileResponse(str(BASE_DIR / "static" / "index.html"))
 
 
 @app.get("/health")
