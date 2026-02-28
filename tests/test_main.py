@@ -2,6 +2,7 @@
 
 import tempfile
 import os
+import sys
 from pathlib import Path
 from agentsecops.main import main
 from agentsecops.securityinstructions import analyze_security
@@ -29,9 +30,8 @@ def test_main_workflow():
             temp_output_path = temp_output.name
         
         # Test main function
-        import sys
         original_argv = sys.argv.copy()
-        sys.argv = ['main.py', temp_file_path, '-o', temp_output_path]
+        sys.argv = ['secure', temp_file_path, '-o', temp_output_path]
         
         result = main()
         
@@ -44,6 +44,7 @@ def test_main_workflow():
             report_content = f.read()
         
         assert "# Security Analysis Report" in report_content
+        assert "Pattern-Based Security Analysis" in report_content
         assert "Potential Passwords Found" in report_content
         assert "Security Issues Found" in report_content
         assert "Potential Sensitive Data Found" in report_content
@@ -54,6 +55,104 @@ def test_main_workflow():
         os.unlink(temp_file_path)
         if os.path.exists(temp_output_path):
             os.unlink(temp_output_path)
+
+
+def test_main_workflow_with_options():
+    """Test main workflow with text processing options."""
+    test_content = "  HELLO WORLD  "
+    
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+        temp_file.write(test_content)
+        temp_file_path = temp_file.name
+    
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.md') as temp_output:
+            temp_output_path = temp_output.name
+        
+        original_argv = sys.argv.copy()
+        sys.argv = ['secure', temp_file_path, '-o', temp_output_path, '-l', '-s']
+        
+        result = main()
+        
+        assert result == 0, "Main function should return 0 on success"
+        assert os.path.exists(temp_output_path), "Output file should be created"
+        
+    finally:
+        sys.argv = original_argv
+        os.unlink(temp_file_path)
+        if os.path.exists(temp_output_path):
+            os.unlink(temp_output_path)
+
+
+def test_main_workflow_no_patterns():
+    """Test main workflow with pattern analysis disabled."""
+    test_content = "password = secret123"
+    
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+        temp_file.write(test_content)
+        temp_file_path = temp_file.name
+    
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.md') as temp_output:
+            temp_output_path = temp_output.name
+        
+        original_argv = sys.argv.copy()
+        sys.argv = ['secure', temp_file_path, '-o', temp_output_path, '--no-patterns']
+        
+        result = main()
+        
+        assert result == 0, "Main function should return 0 on success"
+        assert os.path.exists(temp_output_path), "Output file should be created"
+        
+        # Verify that pattern analysis was skipped
+        with open(temp_output_path, 'r', encoding='utf-8') as f:
+            report_content = f.read()
+        
+        assert "Pattern-Based Security Analysis" not in report_content
+        
+    finally:
+        sys.argv = original_argv
+        os.unlink(temp_file_path)
+        if os.path.exists(temp_output_path):
+            os.unlink(temp_output_path)
+
+
+def test_main_workflow_verbose():
+    """Test main workflow with verbose output."""
+    test_content = "test content"
+    
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as temp_file:
+        temp_file.write(test_content)
+        temp_file_path = temp_file.name
+    
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.md') as temp_output:
+            temp_output_path = temp_output.name
+        
+        original_argv = sys.argv.copy()
+        sys.argv = ['secure', temp_file_path, '-o', temp_output_path, '--verbose']
+        
+        result = main()
+        
+        assert result == 0, "Main function should return 0 on success"
+        
+    finally:
+        sys.argv = original_argv
+        os.unlink(temp_file_path)
+        if os.path.exists(temp_output_path):
+            os.unlink(temp_output_path)
+
+
+def test_main_workflow_file_not_found():
+    """Test main workflow with non-existent file."""
+    original_argv = sys.argv.copy()
+    sys.argv = ['secure', '/nonexistent/file.txt']
+    
+    result = main()
+    
+    assert result == 1, "Main function should return 1 on file not found error"
+    
+    sys.argv = original_argv
 
 
 def test_analyze_security():
@@ -88,13 +187,68 @@ def test_generate_report():
             'content_length': 100,
             'line_count': 5
         },
-        'findings': {
+        'pattern_analysis': {
             'passwords': [
                 {'line': 1, 'match': 'password=test', 'context': 'password=test'}
             ],
             'api_keys': [],
             'sensitive_data': [],
             'security_issues': []
+        },
+        'mistral_analysis': {}
+    }
+    
+    # Create temporary output file
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.md') as temp_file:
+        temp_file_path = temp_file.name
+    
+    try:
+        # Generate report
+        generate_report(test_findings, temp_file_path)
+        
+        # Verify file was created
+        assert os.path.exists(temp_file_path)
+        
+        # Verify content
+        with open(temp_file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        assert "# Security Analysis Report" in content
+        assert "Pattern-Based Security Analysis" in content
+        assert "Potential Passwords Found (1)" in content
+        assert "Line 1" in content
+        assert "📊 Summary" in content
+        
+    finally:
+        # Clean up
+        os.unlink(temp_file_path)
+
+
+def test_generate_report_with_mistral_analysis():
+    """Test report generation with Mistral AI analysis results."""
+    # Create test findings with Mistral analysis
+    test_findings = {
+        'metadata': {
+            'content_length': 100,
+            'line_count': 5
+        },
+        'pattern_analysis': {
+            'passwords': [],
+            'api_keys': [],
+            'sensitive_data': [],
+            'security_issues': []
+        },
+        'mistral_analysis': {
+            'overall_security_score': 0.85,
+            'critical_issues': ['SQL injection vulnerability'],
+            'medium_issues': ['Hardcoded credentials'],
+            'low_issues': ['Missing input validation'],
+            'detailed_analysis': 'The code shows good security practices overall...',
+            'remediation_recommendations': [
+                'Use parameterized queries for database access',
+                'Implement proper credential management',
+                'Add input validation for all user inputs'
+            ]
         }
     }
     
@@ -114,8 +268,12 @@ def test_generate_report():
             content = f.read()
         
         assert "# Security Analysis Report" in content
-        assert "Potential Passwords Found (1)" in content
-        assert "Line 1" in content
+        assert "🤖 Mistral AI Analysis" in content
+        assert "Comprehensive Security Analysis" in content
+        assert "0.85/1.0" in content
+        assert "SQL injection vulnerability" in content
+        assert "Use parameterized queries" in content
+        assert "📊 Summary" in content
         
     finally:
         # Clean up
@@ -146,8 +304,13 @@ def test_no_security_issues():
 
 if __name__ == "__main__":
     test_main_workflow()
+    test_main_workflow_with_options()
+    test_main_workflow_no_patterns()
+    test_main_workflow_verbose()
+    test_main_workflow_file_not_found()
     test_analyze_security()
     test_generate_report()
+    test_generate_report_with_mistral_analysis()
     test_empty_content()
     test_no_security_issues()
     print("All tests passed!")
