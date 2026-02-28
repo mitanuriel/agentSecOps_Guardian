@@ -42,28 +42,26 @@ source .venv/bin/activate  # On macOS/Linux
 uv pip install -r requirements.txt
 ```
 
-### Installing the Package
+### Installing the Package in development mode 
 
 To install the `secure` CLI tool system-wide:
 
 ```bash
 # Install in development mode (recommended for development)
 pip install -e .
-
-# Or build and install the package
-python -m build
-pip install dist/agentsecops-*.whl
 ```
 
 After installation, you can run the `secure` command from anywhere:
 
 ```bash
 # Run security analysis on a file
-secure input_file.txt
+secure ./tests/example_backend.py
 
 # With Mistral AI analysis (requires API key)
-secure input_file.txt --mistral --mistral-key your_api_key
+secure ./tests/example_backend.py --mistral --mistral-key your_api_key
 ```
+
+📋 Report generated: report.md
 
 ## Usage
 
