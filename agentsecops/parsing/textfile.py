@@ -20,15 +20,18 @@ import sys
 
 def read_text_file(file_path: Union[str, Path]) -> str:
     """Read a text file and return its content as a string."""
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            return f.read()
-    except UnicodeDecodeError:
-        # Try with different encodings if UTF-8 fails
+    
+    # check if file_path is provided, if not read from stdin
+    if file_path:
         try:
-            with open(file_path, 'r', encoding='latin-1') as f:
+            with open(file_path, 'r', encoding='utf-8') as f:
                 return f.read()
-        except Exception as e:
+        except UnicodeDecodeError:
+            # Try with different encodings if UTF-8 fails
+            try:
+                with open(file_path, 'r', encoding='latin-1') as f:
+                    return f.read()
+            except Exception as e:
             raise ValueError(f"Failed to read file: {e}")
         
     else:
