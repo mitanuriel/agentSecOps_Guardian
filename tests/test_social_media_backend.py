@@ -48,7 +48,11 @@ def test_generate_post(monkeypatch):
     client = TestClient(app)
     response = client.post(
         "/generate-post",
-        json={"api_key": "test-key", "prompt": "Write launch post", "model": "mistral-small-latest"},
+        json={
+            "api_key": "test-key",
+            "prompt": "Write launch post",
+            "model": "mistral-small-latest",
+        },
     )
 
     assert response.status_code == 200

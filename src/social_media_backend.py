@@ -4,7 +4,6 @@ import requests
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-
 MISTRAL_CHAT_COMPLETIONS_URL = "https://api.mistral.ai/v1/chat/completions"
 
 app = FastAPI(title="Social Media Manager Backend")
