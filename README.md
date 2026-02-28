@@ -10,6 +10,7 @@
 - 🤖 **Mistral AI Integration** - Leverages Mistral AI for intelligent threat analysis and remediation
 - 📊 **Hallucination Crash Prevention** - Detects and mitigates LLM output anomalies before they impact production
 - ✅ **Verified Fix Deployment** - Validates and safely deploys security patches to the pipeline
+- 📄 **Text Analysis & Security Reporting** - Analyzes text files for security vulnerabilities and generates comprehensive reports
 
 ## Installation
 
@@ -39,17 +40,48 @@ source .venv/bin/activate  # On macOS/Linux
 
 # Install dependencies
 uv pip install -r requirements.txt
-# Run the guardian agent
-python src/main.py
-
-# With custom configuration
-python src/main.py --config config.yml
+```
 
 ## Usage
 
+### Running the Security Analysis CLI
+
+The main CLI tool is located in `agentsecops/main.py` and provides text file analysis with security scanning capabilities:
+
 ```bash
-python src/main.py
+# Basic usage - analyze a text file and generate security report
+python -m agentsecops.main input_file.txt
+
+# With output file specification
+python -m agentsecops.main input_file.txt -o security_report.md
+
+# With text processing options
+python -m agentsecops.main input_file.txt -l -s -w --lines
+
+# Available options:
+# -l, --lowercase        Convert text to lowercase
+# -s, --strip            Strip leading/trailing whitespace
+# -w, --remove-whitespace Remove extra whitespace between words
+# --lines               Process line by line (removes empty lines)
+# -o, --output          Output report file path (default: report.md)
 ```
+
+### Example Workflow
+
+1. **Analyze a configuration file for security issues:**
+   ```bash
+   python -m agentsecops.main config.txt -o config_security_report.md
+   ```
+
+2. **Process and analyze a log file:**
+   ```bash
+   python -m agentsecops.main app.log --lines -s -o log_analysis.md
+   ```
+
+3. **Analyze code files for potential vulnerabilities:**
+   ```bash
+   python -m agentsecops.main source_code.py -o code_security_report.md
+   ```
 
 ## Development
 
@@ -60,37 +92,91 @@ uv pip install -r requirements-dev.txt
 # Run tests
 pytest
 
+# Run specific test files
+pytest tests/test_main.py
+pytest tests/test_textfile_parsing.py
+
 # Run linter
-flake8 src tests
+flake8 agentsecops tests
 
 # Format code
-black src tests
-
-# SHow It Works
-
-1. **Monitor** - Continuously observes LLM agent interactions and outputs
-2. **Detect** - Uses Mistral AI to identify security vulnerabilities and anomalies
-3. **Analyze** - Determines the severity and impact of detected threats
-4. **Remediate** - Generates secure code fixes autonomously
-5. **Verify** - Tests fixes in isolated environments
-6. **Deploy** - Pushes verified patches to production pipeline
+black agentsecops tests
+```
 
 ## Architecture
 
-```
-agentSecOps_Guardian/
-├── src/
-│   ├── monitors/          # Real-time monitoring agents
-│   ├── detectors/         # Vulnerability detection engines
-│   ├── healers/           # Self-healing and fix generation
-│   └── integrations/      # Mistral AI and pipeline connectors
-├── tests/                 # Comprehensive test suite
-└── docs/                  # Documentation and guidesments.txt        # Production dependencies
-├── requirements-dev.txt    # Development dependencies
-├── setup.py               # Package setup
-├──Mistral AI Hackathon 2026
+The current architecture focuses on text analysis and security reporting:
 
-This project was created for the **Mistral AI Hackathon 2026**, showcasing the potential of AI-driven security automation in DevOps workflows. AgentOps Guardian demonstrates how advanced language models can be leveraged to create self-healing systems that protect against emerging LLM security threats.
+```
+agentsecops/
+├── __init__.py               # Package initialization
+├── main.py                  # Main CLI orchestrator
+├── cli.py                   # Original CLI (deprecated, use main.py)
+├── parsing/
+│   └── textfile.py          # Text file parsing utilities
+├── securityinstructions/    # Security analysis module
+│   └── __init__.py          # Security pattern detection
+└── reporting/               # Reporting module
+    └── __init__.py          # Markdown report generation
+
+tests/
+├── test_main.py             # Main workflow tests
+└── test_textfile_parsing.py # Text parsing tests
+```
+
+### How It Works
+
+1. **Text Parsing** - `agentsecops/parsing/textfile.py` reads and processes text files with various transformation options
+2. **Security Analysis** - `agentsecops/securityinstructions/` analyzes content for:
+   - Potential passwords and credentials
+   - API keys and secrets
+   - Sensitive data patterns (emails, credit cards, SSNs)
+   - Common security issues (eval(), exec(), insecure protocols)
+3. **Report Generation** - `agentsecops/reporting/` creates comprehensive markdown reports with findings
+4. **CLI Orchestration** - `agentsecops/main.py` coordinates the entire workflow
+
+## Security Analysis Capabilities
+
+The system detects various security issues:
+
+- **Passwords**: `password=`, `passwd=`, `pwd=` patterns
+- **API Keys**: `api_key=`, `secret=`, `token=` patterns and long hex strings
+- **Sensitive Data**: Credit card numbers, SSN patterns, email addresses
+- **Security Issues**: Use of `eval()`, `exec()`, `pickle.load()`, insecure HTTP, path traversal
+
+## Example Security Report
+
+When you run the analysis, it generates a detailed markdown report:
+
+```markdown
+# Security Analysis Report
+**Generated:** 2026-02-28 12:34:56
+
+---
+## Analysis Metadata
+- **Content Length:** 1024 characters
+- **Line Count:** 42 lines
+
+---
+## 🔴 Potential Passwords Found (2)
+### Line 15
+**Match:** `password = secret123`
+**Context:** `database_password = secret123`
+
+### Line 23
+**Match:** `api_key = abc123`
+**Context:** `config.api_key = abc123`
+
+---
+## 📊 Summary
+- **Total Findings:** 5
+- **Passwords:** 2
+- **API Keys:** 1
+- **Sensitive Data:** 1
+- **Security Issues:** 1
+
+⚠️  **Recommendation:** Review the findings above and address any genuine security issues.
+```
 
 ## Contributing
 
@@ -110,6 +196,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ for Mistral AI Hackathon 2026**
 
-## License
+## Mistral AI Hackathon 2026
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project was created for the **Mistral AI Hackathon 2026**, showcasing the potential of AI-driven security automation in DevOps workflows. AgentOps Guardian demonstrates how advanced language models can be leveraged to create self-healing systems that protect against emerging LLM security threats.
