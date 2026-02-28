@@ -41,25 +41,70 @@ def health() -> dict:
 @app.post("/generate-post")
 def generate_post(payload: GeneratePostRequest) -> dict:
     """Generate a social media post from a user prompt using Mistral."""
-    response = requests.post(
-        MISTRAL_CHAT_COMPLETIONS_URL,
-        headers={
-            "Authorization": f"Bearer {payload.api_key}",
-            "Content-Type": "application/json",
-        },
-        json={
+    try:
+        # Clean the API key (remove any whitespace)
+        clean_api_key = payload.api_key.strip()
+        
+        # Log key format for debugging (first/last 4 chars only)
+        key_preview = f"{clean_api_key[:4]}...{clean_api_key[-4:]}" if len(clean_api_key) > 8 else "***"
+        print(f"DEBUG: Using API key: {key_preview}, length: {len(clean_api_key)}")
+        
+        response = requests.post(
+            MISTRAL_CHAT_COMPLETIONS_URL,
+            headers={
+                "Authorization": f"Bearer {clean_api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": payload.model,
+                "messages": [{"role": "user", "content": payload.prompt}],
+            },
+            timeout=60,
+        )
+        
+        # Handle API errors with helpful messages
+        if response.status_code == 401:
+            from fastapi import HTTPException
+            error_msg = response.json().get("message", "") if response.text else ""
+            print(f"DEBUG: 401 error details - {error_msg}")
+            raise HTTPException(
+                status_code=401,
+                detail=f"Invalid API key. Check: 1) Key is correctly copied from Mistral console 2) No extra spaces 3) Key is activated. API response: {error_msg}"
+            )
+        elif response.status_code == 429:
+            from fastapi import HTTPException
+            raise HTTPException(
+                status_code=429,
+                detail="Rate limit exceeded. Please wait a moment and try again."
+            )
+        elif response.status_code >= 400:
+            from fastapi import HTTPException
+            error_detail = response.json().get("error", {}).get("message", "Unknown error")
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Mistral API error: {error_detail}"
+            )
+        
+        response.raise_for_status()
+
+        completion = response.json()
+        post_text = completion["choices"][0]["message"]["content"]
+
+        return {
+            "post": post_text,
             "model": payload.model,
-            "messages": [{"role": "user", "content": payload.prompt}],
-        },
-        timeout=60,
-    )
-    response.raise_for_status()
-
-    completion = response.json()
-    post_text = completion["choices"][0]["message"]["content"]
-
-    return {
-        "post": post_text,
-        "model": payload.model,
-        "provider": "mistral",
-    }
+            "provider": "mistral",
+        }
+    
+    except requests.exceptions.Timeout:
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=504,
+            detail="Request timeout. The API took too long to respond. Please try again."
+        )
+    except requests.exceptions.RequestException as e:
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=500,
+            detail=f"Network error: {str(e)}"
+        )

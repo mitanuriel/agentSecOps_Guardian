@@ -17,6 +17,60 @@ const API_BASE_URL = window.location.origin;
 // Local Storage for API Key
 const STORAGE_KEY = 'mistral_api_key';
 
+// Custom Cursor
+const cursor = document.createElement('div');
+cursor.className = 'custom-cursor';
+document.body.appendChild(cursor);
+
+const follower = document.createElement('div');
+follower.className = 'cursor-follower';
+document.body.appendChild(follower);
+
+let mouseX = 0, mouseY = 0;
+let followerX = 0, followerY = 0;
+
+document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    
+    // Instant cursor response - no delay
+    cursor.style.left = mouseX + 'px';
+    cursor.style.top = mouseY + 'px';
+    
+    // Create sparkle effect more frequently
+    if (Math.random() > 0.93) {
+        createSparkle(mouseX, mouseY);
+    }
+});
+
+// Much faster follower animation
+function animateFollower() {
+    followerX += (mouseX - followerX) * 0.45;
+    followerY += (mouseY - followerY) * 0.45;
+    
+    follower.style.left = followerX + 'px';
+    follower.style.top = followerY + 'px';
+    
+    requestAnimationFrame(animateFollower);
+}
+animateFollower();
+
+// Sparkle effect
+function createSparkle(x, y) {
+    const sparkle = document.createElement('div');
+    sparkle.className = 'sparkle';
+    sparkle.style.left = x + 'px';
+    sparkle.style.top = y + 'px';
+    sparkle.style.width = '6px';
+    sparkle.style.height = '6px';
+    sparkle.style.background = 'linear-gradient(135deg, #c084fc, #fbbf24)';
+    sparkle.style.borderRadius = '50%';
+    sparkle.style.boxShadow = '0 0 10px #c084fc';
+    document.body.appendChild(sparkle);
+    
+    setTimeout(() => sparkle.remove(), 600);
+}
+
 // Load saved API key on page load
 window.addEventListener('DOMContentLoaded', () => {
     const savedKey = localStorage.getItem(STORAGE_KEY);
