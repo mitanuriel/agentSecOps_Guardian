@@ -32,7 +32,7 @@ def read_text_file(file_path: Union[str, Path]) -> str:
                 with open(file_path, 'r', encoding='latin-1') as f:
                     return f.read()
             except Exception as e:
-            raise ValueError(f"Failed to read file: {e}")
+                raise ValueError(f"Failed to read file: {e}")
         
     else:
         # Read from stdin
