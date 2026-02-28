@@ -51,6 +51,12 @@ To install the `secure` CLI tool system-wide:
 pip install -e .
 ```
 
+or
+
+```bash
+uv build
+```
+
 After installation, you can run the `secure` command from anywhere:
 
 ```bash
