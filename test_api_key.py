@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Quick test script to validate your Mistral API key."""
 
+import os
 import sys
+import getpass
 import requests
 
 def test_mistral_key(api_key: str) -> None:
@@ -9,9 +11,12 @@ def test_mistral_key(api_key: str) -> None:
     # Clean the key
     api_key = api_key.strip()
     
-    print(f"Testing API key...")
-    print(f"  Length: {len(api_key)} characters")
-    print(f"  Preview: {api_key[:4]}...{api_key[-4:]}" if len(api_key) > 8 else "  Key too short!")
+    # Validate without exposing key content
+    if not api_key:
+        print("❌ ERROR: API key is empty")
+        sys.exit(1)
+    
+    print("Testing API key...")
     print()
     
     # Test with a simple request
@@ -53,18 +58,23 @@ def test_mistral_key(api_key: str) -> None:
         print("Check your internet connection")
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python test_api_key.py YOUR_API_KEY")
-        print("\nOr set MISTRAL_API_KEY environment variable:")
+    # Try to get API key from secure sources
+    api_key = os.getenv("MISTRAL_API_KEY")
+    
+    if not api_key:
+        # Prompt securely without echoing to terminal
+        try:
+            api_key = getpass.getpass("Enter your Mistral API key: ")
+        except (KeyboardInterrupt, EOFError):
+            print("\n❌ API key input cancelled")
+            sys.exit(1)
+    
+    if not api_key or not api_key.strip():
+        print("❌ ERROR: No API key provided")
+        print("\nSet MISTRAL_API_KEY environment variable:")
         print("  export MISTRAL_API_KEY='your-key-here'")
         print("  python test_api_key.py")
-        
-        import os
-        api_key = os.getenv("MISTRAL_API_KEY")
-        if api_key:
-            print("\nFound MISTRAL_API_KEY in environment, testing...")
-            test_mistral_key(api_key)
-        else:
-            sys.exit(1)
-    else:
-        test_mistral_key(sys.argv[1])
+        print("\nOr run the script and enter key when prompted (secure input)")
+        sys.exit(1)
+    
+    test_mistral_key(api_key)
