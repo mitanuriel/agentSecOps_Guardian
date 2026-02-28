@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentOps Guardian - Social Media Manager</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <span class="shield">🛡️</span>
+                <h1>AgentOps Guardian</h1>
+            </div>
+            <p class="subtitle">AI-Powered Social Media Manager</p>
+        </header>
+
+        <main>
+            <div class="dashboard-card">
+                <h2>Generate Social Media Post</h2>
+                <p class="description">Create engaging content powered by Mistral AI</p>
+                
+                <form id="postForm">
+                    <div class="form-group">
+                        <label for="apiKey">
+                            <span class="label-text">Mistral API Key</span>
+                            <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="password" 
+                            id="apiKey" 
+                            placeholder="Enter your Mistral API key"
+                            required
+                        >
+                        <small class="hint">Your key is stored locally and never sent to our servers</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prompt">
+                            <span class="label-text">Post Description</span>
+                            <span class="required">*</span>
+                        </label>
+                        <textarea 
+                            id="prompt" 
+                            rows="4" 
+                            placeholder="e.g., Write a Twitter thread about the benefits of AI in healthcare..."
+                            required
+                        ></textarea>
+                        <small class="hint">Be specific about tone, platform, and key points</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="model">
+                            <span class="label-text">Model Selection</span>
+                        </label>
+                        <select id="model">
+                            <option value="mistral-small-latest">Mistral Small (Fast)</option>
+                            <option value="mistral-medium-latest">Mistral Medium (Balanced)</option>
+                            <option value="mistral-large-latest">Mistral Large (Best Quality)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="generateBtn">
+                        <span class="btn-text">Generate Post</span>
+                        <span class="btn-icon">✨</span>
+                    </button>
+                </form>
+            </div>
+
+            <div id="resultSection" class="dashboard-card result-card hidden">
+                <div class="result-header">
+                    <h3>Generated Post</h3>
+                    <div class="result-meta">
+                        <span class="badge" id="modelBadge"></span>
+                        <span class="badge provider-badge">Mistral AI</span>
+                    </div>
+                </div>
+                
+                <div class="result-content">
+                    <div id="postOutput" class="post-output"></div>
+                </div>
+                
+                <div class="result-actions">
+                    <button class="btn-secondary" id="copyBtn">
+                        <span>📋 Copy to Clipboard</span>
+                    </button>
+                    <button class="btn-secondary" id="newPostBtn">
+                        <span>🔄 Generate New</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="errorSection" class="dashboard-card error-card hidden">
+                <div class="error-header">
+                    <span class="error-icon">⚠️</span>
+                    <h3>Error</h3>
+                </div>
+                <p id="errorMessage"></p>
+                <button class="btn-secondary" id="dismissErrorBtn">Dismiss</button>
+            </div>
+
+            <div id="loadingSection" class="loading-overlay hidden">
+                <div class="loading-spinner"></div>
+                <p>Generating your post with Mistral AI...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>Built for Mistral AI Hackathon 2026 | <a href="https://github.com/mitanuriel/agentSecOps_Guardian" target="_blank">GitHub</a></p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
