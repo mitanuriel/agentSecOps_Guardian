@@ -22,7 +22,7 @@ setup(
     long_description_content_type="text/markdown",
     author="AgentSecOps Team",
     author_email="security@agentsecops.ai",
-    url="https://github.com/agentsecops/guardian",
+    url="https://github.com/mitanuriel/agentSecOps_Guardian",
     packages=find_packages(),
     package_data={
         "agentsecops": ["py.typed"],

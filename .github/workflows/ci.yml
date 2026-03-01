@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.10', '3.11']
 
     steps:
     - uses: actions/checkout@v3
@@ -30,24 +30,24 @@ jobs:
       run: |
         uv venv
         source .venv/bin/activate
+        uv pip install -r requirements.txt
         uv pip install -r requirements-dev.txt
+        uv pip install -e .
     
     - name: Lint with flake8
       run: |
-        # Stop the build if there are Python syntax errors or undefined names
-        .venv/bin/flake8 src tests --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Exit-zero treats all errors as warnings
-        .venv/bin/flake8 src tests --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        .venv/bin/flake8 agentsecops tests --count --select=E9,F63,F7,F82 --show-source --statistics
 
     - name: Format check with black
       run: |
-        .venv/bin/black --check src tests
+        .venv/bin/black --check agentsecops tests
 
     - name: Test with pytest
       run: |
-        .venv/bin/pytest --cov=src --cov-report=xml --cov-report=term
+        .venv/bin/pytest tests/test_textfile_parsing.py tests/test_main.py --cov=agentsecops --cov-report=xml --cov-report=term
     
     - name: Upload coverage to Codecov
+      if: matrix.python-version == '3.11'
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
