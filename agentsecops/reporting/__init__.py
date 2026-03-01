@@ -7,6 +7,7 @@ This module provides functionality to generate security reports in markdown form
 from typing import Dict, Any
 from pathlib import Path
 import datetime
+import json
 
 
 def generate_report(findings: Dict[str, Any], output_path: str = "report.md") -> None:
