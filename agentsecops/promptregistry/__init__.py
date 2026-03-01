@@ -4,6 +4,17 @@ Prompt Registry Module
 This module contains system prompts for security analysis using Mistral AI.
 """
 
+# Security advisor guidance used to shape remediation quality and consistency.
+SECURITY_ADVISOR_GUIDANCE = """
+Apply these controls when producing findings and recommendations:
+- Treat untrusted prompt/user input as hostile until validated.
+- Recommend strict schema validation (for example, Pydantic) at input boundary.
+- Recommend structured model-output validation before tool/action execution.
+- Recommend explicit allowlist checks for tools/actions and deny by default.
+- Recommend fail-closed behavior on validation errors.
+- Prefer concrete, implementation-ready remediation steps.
+"""
+
 # System prompt for detecting prompt injection attempts
 PROMPT_INJECTION_DETECTION = """
 You are an AI security analyst specializing in detecting prompt injection attempts. 
@@ -106,25 +117,32 @@ Please provide your compliance analysis in JSON format:
 def get_prompt(prompt_type: str) -> str:
     """
     Get a system prompt by type.
-    
+
     Args:
         prompt_type: Type of prompt to retrieve
-        
+
     Returns:
         The requested system prompt
-        
+
     Raises:
         ValueError: If prompt_type is not recognized
     """
     prompts = {
-        'prompt_injection': PROMPT_INJECTION_DETECTION,
-        'hallucination': HALLUCINATION_RISK_DETECTION,
-        'security_analysis': SECURITY_ANALYSIS,
-        'secure_coding': SECURE_CODING_RECOMMENDATIONS,
-        'compliance': COMPLIANCE_ANALYSIS
+        "prompt_injection": PROMPT_INJECTION_DETECTION,
+        "hallucination": HALLUCINATION_RISK_DETECTION,
+        "security_analysis": SECURITY_ANALYSIS,
+        "secure_coding": SECURE_CODING_RECOMMENDATIONS,
+        "compliance": COMPLIANCE_ANALYSIS,
     }
-    
+
     if prompt_type not in prompts:
-        raise ValueError(f"Unknown prompt type: {prompt_type}. Available types: {list(prompts.keys())}")
-    
+        raise ValueError(
+            f"Unknown prompt type: {prompt_type}. Available types: {list(prompts.keys())}"
+        )
+
     return prompts[prompt_type]
+
+
+def get_security_advisor_guidance() -> str:
+    """Return security advisor guidance text for prompt augmentation."""
+    return SECURITY_ADVISOR_GUIDANCE.strip()
