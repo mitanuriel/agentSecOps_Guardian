@@ -23,75 +23,63 @@ def main():
     parser = argparse.ArgumentParser(
         description="secure - AI-Powered Security Analysis Tool",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        prog='secure'
+        prog="secure",
     )
 
     # Required arguments
-    parser.add_argument(
-        'input_file',
-        type=str,
-        help='Path to the input text file to analyze'
-    )
+    parser.add_argument("input_file", type=str, help="Path to the input text file to analyze")
 
     # Output options
     parser.add_argument(
-        '-o', '--output',
-        type=str,
-        default='report.md',
-        help='Output report file path'
+        "-o", "--output", type=str, default="report.md", help="Output report file path"
     )
 
     # Text processing options
     parser.add_argument(
-        '-l', '--lowercase',
-        action='store_true',
-        help='Convert text to lowercase before analysis'
+        "-l", "--lowercase", action="store_true", help="Convert text to lowercase before analysis"
     )
     parser.add_argument(
-        '-s', '--strip',
-        action='store_true',
-        help='Strip leading/trailing whitespace'
+        "-s", "--strip", action="store_true", help="Strip leading/trailing whitespace"
     )
     parser.add_argument(
-        '-w', '--remove-whitespace',
-        action='store_true',
-        help='Remove extra whitespace between words'
+        "-w",
+        "--remove-whitespace",
+        action="store_true",
+        help="Remove extra whitespace between words",
     )
     parser.add_argument(
-        '--lines',
-        action='store_true',
-        help='Process line by line (removes empty lines)'
+        "--lines", action="store_true", help="Process line by line (removes empty lines)"
     )
 
     # Mistral AI integration options
     parser.add_argument(
-        '--mistral',
-        action='store_true',
-        help='Enable Mistral AI analysis for advanced threat detection'
+        "--mistral",
+        action="store_true",
+        help="Enable Mistral AI analysis for advanced threat detection",
     )
     parser.add_argument(
-        '--mistral-key',
+        "--mistral-key",
         type=str,
-        help='Mistral API key (overrides MISTRAL_API_KEY environment variable)'
+        help="Mistral API key (overrides MISTRAL_API_KEY environment variable)",
     )
     parser.add_argument(
-        '--analysis-type',
+        "--analysis-type",
         type=str,
-        default='security_analysis',
-        choices=['prompt_injection', 'hallucination', 'security_analysis', 'secure_coding', 'compliance'],
-        help='Type of Mistral AI analysis to perform'
+        default="security_analysis",
+        choices=[
+            "prompt_injection",
+            "hallucination",
+            "security_analysis",
+            "secure_coding",
+            "compliance",
+        ],
+        help="Type of Mistral AI analysis to perform",
     )
 
     # Advanced options
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     parser.add_argument(
-        '--verbose',
-        action='store_true',
-        help='Enable verbose output'
-    )
-    parser.add_argument(
-        '--no-patterns',
-        action='store_true',
-        help='Skip pattern-based security analysis'
+        "--no-patterns", action="store_true", help="Skip pattern-based security analysis"
     )
 
     args = parser.parse_args()
@@ -100,7 +88,7 @@ def main():
         # Step 1: Read and parse the input file
         if args.verbose:
             print(f"📖 Reading and parsing: {args.input_file}")
-        
+
         content = read_text_file(args.input_file)
         parsed_content = parse_text(content, args)
 
@@ -119,23 +107,23 @@ def main():
         if args.mistral:
             if args.verbose:
                 print("🤖 Performing Mistral AI analysis...")
-            
+
             # Get API key from args or environment
-            api_key = args.mistral_key or os.environ.get('MISTRAL_API_KEY')
+            api_key = args.mistral_key or os.environ.get("MISTRAL_API_KEY")
             if not api_key:
                 print("❌ Error: Mistral AI analysis requested but no API key provided.")
                 print("   Set MISTRAL_API_KEY environment variable or use --mistral-key option.")
                 return 1
-            
+
             try:
                 mistral_analysis = analyze_with_mistral_api(
                     parsed_content,
                     api_key,
                     args.analysis_type,
-                    security_findings if security_findings else None
+                    security_findings if security_findings else None,
                 )
-                
-                if 'error' in mistral_analysis:
+
+                if "error" in mistral_analysis:
                     print(f"⚠️  Mistral AI analysis error: {mistral_analysis['error']}")
                     mistral_analysis = {}
                 else:
@@ -148,14 +136,14 @@ def main():
         # Step 4: Generate comprehensive report
         if args.verbose:
             print(f"📊 Generating report: {args.output}")
-        
+
         # Create enhanced findings with both pattern and AI analysis
         enhanced_findings = {
-            'metadata': security_findings.get('metadata', {}) if security_findings else {},
-            'pattern_analysis': security_findings.get('findings', {}) if security_findings else {},
-            'mistral_analysis': mistral_analysis
+            "metadata": security_findings.get("metadata", {}) if security_findings else {},
+            "pattern_analysis": security_findings.get("findings", {}) if security_findings else {},
+            "mistral_analysis": mistral_analysis,
         }
-        
+
         generate_report(enhanced_findings, args.output)
 
         if args.verbose:
@@ -172,9 +160,10 @@ def main():
         print(f"❌ Error: {str(e)}")
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

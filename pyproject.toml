@@ -49,10 +49,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/agentsecops/guardian"
-Documentation = "https://github.com/agentsecops/guardian/blob/main/README.md"
-Repository = "https://github.com/agentsecops/guardian"
-Issues = "https://github.com/agentsecops/guardian/issues"
+Homepage = "https://github.com/mitanuriel/agentSecOps_Guardian"
+Documentation = "https://github.com/mitanuriel/agentSecOps_Guardian/blob/main/README.md"
+Repository = "https://github.com/mitanuriel/agentSecOps_Guardian"
+Issues = "https://github.com/mitanuriel/agentSecOps_Guardian/issues"
 
 [project.scripts]
 secure = "agentsecops.main:main"

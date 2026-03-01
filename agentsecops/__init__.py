@@ -24,21 +24,21 @@ from .promptregistry import (
     SECURITY_ANALYSIS,
     SECURE_CODING_RECOMMENDATIONS,
     COMPLIANCE_ANALYSIS,
-    get_prompt
+    get_prompt,
 )
 
 __all__ = [
-    'main',
-    'MistralClient',
-    'analyze_with_mistral_api',
-    'analyze_security',
-    'read_text_file',
-    'parse_text',
-    'generate_report',
-    'PROMPT_INJECTION_DETECTION',
-    'HALLUCINATION_RISK_DETECTION',
-    'SECURITY_ANALYSIS',
-    'SECURE_CODING_RECOMMENDATIONS',
-    'COMPLIANCE_ANALYSIS',
-    'get_prompt'
+    "main",
+    "MistralClient",
+    "analyze_with_mistral_api",
+    "analyze_security",
+    "read_text_file",
+    "parse_text",
+    "generate_report",
+    "PROMPT_INJECTION_DETECTION",
+    "HALLUCINATION_RISK_DETECTION",
+    "SECURITY_ANALYSIS",
+    "SECURE_CODING_RECOMMENDATIONS",
+    "COMPLIANCE_ANALYSIS",
+    "get_prompt",
 ]

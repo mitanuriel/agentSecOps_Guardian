@@ -1,0 +1,154 @@
+name: AgentSecOps Full Pipeline CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'agentsecops/**'
+      - 'tests/**'
+      - 'requirements*.txt'
+      - 'setup.py'
+      - 'pyproject.toml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'agentsecops/**'
+      - 'tests/**'
+      - 'requirements*.txt'
+      - 'setup.py'
+      - 'pyproject.toml'
+
+jobs:
+  test-full-pipeline:
+    name: Test AgentSecOps Full Pipeline
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt','**/pyproject.toml','**/setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies and package
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          pip install -e .
+          pip install pytest
+      
+      - name: Run all unit tests
+        run: |
+          # Test core agentsecops modules: parsing, security analysis, reporting, prompt registry
+          # Note: test_social_media_backend.py and test_api_key.py are excluded as they test
+          # the demo application and require additional dependencies (fastapi) or API keys
+          pytest -v tests/test_textfile_parsing.py tests/test_main.py --tb=short
+
+      - name: Parser smoke test
+        run: |
+          python - <<'PY'
+          from agentsecops.parsing.textfile import parse_text, read_text_file
+          import argparse
+          
+          # Test 1: Basic text parsing
+          args = argparse.Namespace(lowercase=True)
+          out = parse_text("HELLO CI", args)
+          print(f"✓ Basic parse test: {out}")
+          assert out == "hello ci", f"Expected 'hello ci', got '{out}'"
+          
+          # Test 2: Read and parse README
+          content = read_text_file("README.md")
+          print(f"✓ Successfully read README.md ({len(content)} chars)")
+          
+          # Test 3: Line-by-line parsing
+          args_lines = argparse.Namespace(lines=True)
+          parsed = parse_text(content[:500], args_lines)
+          print(f"✓ Line-by-line parsing successful ({len(parsed.splitlines())} lines)")
+          
+          print("✓ All parser smoke tests passed!")
+          PY
+      
+      - name: Test full integration pipeline
+        run: |
+          python - <<'PY'
+          # Test parser -> security -> reporting pipeline
+          from agentsecops.parsing.textfile import read_text_file, parse_text
+          from agentsecops.securityinstructions import analyze_security
+          from agentsecops.reporting import generate_report
+          from agentsecops.promptregistry import get_prompt, get_security_advisor_guidance
+          import argparse
+          import os
+          
+          print("Testing full AgentSecOps pipeline...")
+          
+          # Step 1: Parser - Read and parse test content
+          test_content = """
+          password = secret123
+          api_key = abc123def456
+          user@email.com
+          eval("dangerous code")
+          """
+          args = argparse.Namespace(lowercase=False, strip=True, remove_whitespace=False, lines=False, parse_json=False)
+          parsed = parse_text(test_content, args)
+          print(f"✓ Step 1 - Parser: Parsed {len(parsed)} chars")
+          
+          # Step 2: Security Analysis - Detect vulnerabilities
+          findings = analyze_security(parsed)
+          print(f"✓ Step 2 - Security Analysis: Found {len(findings['findings'])} finding categories")
+          assert 'passwords' in findings['findings'], "Should detect passwords"
+          assert 'api_keys' in findings['findings'], "Should detect API keys"
+          assert 'sensitive_data' in findings['findings'], "Should detect sensitive data"
+          assert 'security_issues' in findings['findings'], "Should detect security issues"
+          
+          # Step 3: Prompt Registry - Load security prompts
+          prompt = get_prompt('prompt_injection')
+          guidance = get_security_advisor_guidance()
+          print(f"✓ Step 3 - Prompt Registry: Loaded prompt ({len(prompt)} chars) and guidance ({len(guidance)} chars)")
+          assert 'prompt injection' in prompt.lower(), "Prompt should contain injection detection logic"
+          assert 'validation' in guidance.lower(), "Guidance should mention validation"
+          
+          # Step 4: Reporting - Generate markdown report
+          report_findings = {
+              'metadata': findings.get('metadata', {}),
+              'pattern_analysis': findings.get('findings', {}),
+              'mistral_analysis': {}
+          }
+          output_path = '/tmp/test_report.md'
+          generate_report(report_findings, output_path)
+          print(f"✓ Step 4 - Reporting: Generated report at {output_path}")
+          
+          # Verify report was created and contains expected sections
+          with open(output_path, 'r') as f:
+              report_content = f.read()
+          
+          assert '# Security Analysis Report' in report_content, "Report should have title"
+          assert 'Pattern-Based Security Analysis' in report_content, "Report should have analysis section"
+          assert len(report_content) > 100, "Report should have substantial content"
+          print(f"✓ Report validation: {len(report_content)} chars, all sections present")
+          
+          # Clean up
+          os.unlink(output_path)
+          
+          print("\n✅ FULL INTEGRATION TEST PASSED!")
+          print("   Parser ✓ Security Analysis ✓ Prompt Registry ✓ Reporting ✓")
+          PY
+      
+      - name: Test parser CLI integration
+        run: |
+          echo "Testing parser integration with sample content..."
+          echo "This is a test file for parser validation" > /tmp/test_input.txt
+          python -c "from agentsecops.parsing.textfile import read_text_file; print(read_text_file('/tmp/test_input.txt'))"
+          echo "✓ Parser CLI integration successful"
