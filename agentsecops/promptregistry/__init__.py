@@ -9,6 +9,7 @@ SECURITY_ADVISOR_GUIDANCE = """
 Apply these controls when producing findings and recommendations:
 - Treat untrusted prompt/user input as hostile until validated.
 - Recommend strict schema validation (for example, Pydantic) at input boundary.
+- Recommend checks to prevent prompt injection attacks that reveal system prompt (Ignore all previous insturctions, etc)
 - Recommend structured model-output validation before tool/action execution.
 - Recommend explicit allowlist checks for tools/actions and deny by default.
 - Recommend fail-closed behavior on validation errors.
