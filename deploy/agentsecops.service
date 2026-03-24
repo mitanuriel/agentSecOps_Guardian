@@ -1,0 +1,25 @@
+[Unit]
+Description=AgentSecOps Guardian - Social Media Manager
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/agentsecops/tests
+ExecStart=/opt/agentsecops/.venv/bin/uvicorn src.social_media_backend:app --host 0.0.0.0 --port 8000
+Restart=on-failure
+RestartSec=5s
+
+# Environment
+Environment="PYTHONUNBUFFERED=1"
+# Add your env vars here, e.g.:
+# Environment="MISTRAL_API_KEY=your_key_here"
+# Or use an env file:
+# EnvironmentFile=/opt/agentsecops/.env
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
