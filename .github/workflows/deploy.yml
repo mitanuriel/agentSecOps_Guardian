@@ -47,7 +47,23 @@ jobs:
             .venv/bin/pip install uvicorn fastapi python-multipart
 
             echo "==> Installing/refreshing systemd service..."
-            sudo cp deploy/agentsecops.service /etc/systemd/system/agentsecops.service
+            printf '%s\n' \
+              '[Unit]' \
+              'Description=AgentSecOps Guardian - Social Media Manager' \
+              'After=network.target' \
+              '' \
+              '[Service]' \
+              'Type=simple' \
+              'User=root' \
+              'WorkingDirectory=/opt/agentsecops/tests' \
+              'ExecStart=/opt/agentsecops/.venv/bin/uvicorn src.social_media_backend:app --host 0.0.0.0 --port 8000' \
+              'Restart=on-failure' \
+              'RestartSec=5s' \
+              'Environment=PYTHONUNBUFFERED=1' \
+              '' \
+              '[Install]' \
+              'WantedBy=multi-user.target' \
+              | sudo tee /etc/systemd/system/agentsecops.service > /dev/null
             sudo systemctl daemon-reload
             sudo systemctl enable agentsecops
 
