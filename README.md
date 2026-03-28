@@ -1,5 +1,7 @@
 # AgentOps Guardian 🛡️
 
+[![Docker Hub](https://img.shields.io/docker/v/mitanuriel/agentsecops-guardian?label=Docker%20Hub&logo=docker)](https://hub.docker.com/r/mitanuriel/agentsecops-guardian)
+
 **AgentOps Guardian** is a self-healing DevOps framework built for the **Mistral AI Hackathon 2026** that automatically detects and repairs LLM vulnerabilities in real-time. By integrating Mistral AI, it monitors agentic workflows for prompt injections and "hallucination crashes," autonomously pushing verified code fixes to secure the pipeline.
 
 ## Features
@@ -68,6 +70,24 @@ secure ./tests/example_backend.py --mistral --mistral-key your_api_key
 ```
 
 📋 Report generated: report.md
+
+## Docker
+
+Pull and run the image without any local installation:
+
+```bash
+# Pull from Docker Hub
+docker pull mitanuriel/agentsecops-guardian:latest
+
+# Run (shows help)
+docker run --rm mitanuriel/agentsecops-guardian
+
+# Analyze a local file
+docker run --rm \
+  -v $(pwd):/data \
+  -e MISTRAL_API_KEY=your_key_here \
+  mitanuriel/agentsecops-guardian /data/yourfile.txt -o /data/report.md
+```
 
 ## Usage
 
