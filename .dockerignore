@@ -1,0 +1,28 @@
+# Virtual environments — never needed inside the image
+.venv/
+venv/
+
+# Secrets — must never end up in an image
+.env
+.env.*
+
+# Python build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Tests — not needed in production image
+tests/
+
+# Dev tooling
+.git/
+.gitignore
+pytest.ini
+requirements-dev.txt
+
+# Docs
+docs/
+*.md
